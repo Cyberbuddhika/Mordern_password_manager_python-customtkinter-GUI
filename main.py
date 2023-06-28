@@ -20,11 +20,15 @@ canvas = tk.Canvas(app, width=600, height=400, bg='#042430')
 # label
 
 welcome_label = customtkinter.CTkLabel(app, text="Welcome Buddhika", fg_color="transparent", font=("Segoe UI", 22))
-welcome_label.grid(row=0, column=0)
+welcome_label.place(x=0, y=0)
 
 # buttons
-view_passwords_button = customtkinter.CTkButton(app, text="View Passwords", fg_color="#166b8b", text_color="#fafafa")
-view_passwords_button.grid(row=1, column=0, pady=50)
+view_passwords_button = customtkinter.CTkButton(app, text="View Passwords", fg_color="#0c526b", text_color="white")
+view_passwords_button.place(x=0, y=70)
+add_passwords_button = customtkinter.CTkButton(app, text="Add Password", fg_color="#0c526b", text_color="white")
+add_passwords_button.place(x=0, y=110)
+change_email_button = customtkinter.CTkButton(app, text="Change default email", fg_color="#0c526b", text_color="white")
+change_email_button.place(x=0, y=150)
 
 
 
