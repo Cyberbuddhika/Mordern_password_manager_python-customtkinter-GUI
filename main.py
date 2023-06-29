@@ -36,10 +36,12 @@ welcome_label2.place(x=50, y=165)
 # buttons
 view_passwords_button = customtkinter.CTkButton(left_pane, text="View Passwords", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR)
 view_passwords_button.place(x=50, y=225)
-add_passwords_button = customtkinter.CTkButton(left_pane, text="Add Password", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR)
-add_passwords_button.place(x=50, y=260)
+change_login_button = customtkinter.CTkButton(left_pane, text="Change Login", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR)
+change_login_button.place(x=50, y=260)
 change_email_button = customtkinter.CTkButton(left_pane, text="Change Default Email", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR)
 change_email_button.place(x=50, y=295)
+info_button = customtkinter.CTkButton(left_pane, text="Info", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR)
+info_button.place(x=50, y=330)
 
 
 # -------Right Pane--------------------
@@ -49,23 +51,41 @@ right_pane = tk.Frame(app)
 right_pane.place(x=250, y=0, width=550, height=600)
 right_pane.configure(bg=RIGHT_BG_COLOR)
 
-# Title - changing based on password availability
-if passwords_saved:
-    welcome_label = customtkinter.CTkLabel(right_pane, text="Passwords", fg_color="transparent", font=(MAIN_FONT, 22))
-    welcome_label.place(x=250, y=0)
-else:
-    password_title_label = customtkinter.CTkLabel(right_pane, text="Ops!!! There is no passwords to show. Try adding one",
-                                                  fg_color="transparent", font=(MAIN_FONT, 15), text_color="#C0C0C0")
-    password_title_label.place(x=150, y=0)
+# Title - changing based on activity
+add_password_label = customtkinter.CTkLabel(right_pane, text="+ Add a Password", fg_color="transparent", font=(MAIN_FONT, 22))
+add_password_label.place(x=180, y=50)
 
-#  Password list
+#  Add password form
 
-website_name_label = customtkinter.CTkLabel(right_pane, text="Website Name", fg_color="transparent", font=(MAIN_FONT, 15))
-website_name_label.place(x=150, y=50)
-website_url_label = customtkinter.CTkLabel(right_pane, text="URL", fg_color="transparent", font=(MAIN_FONT, 15))
-website_url_label.place(x=250, y=50)
-website_email_label = customtkinter.CTkLabel(right_pane, text="Email", fg_color="transparent", font=(MAIN_FONT, 15))
-website_email_label.place(x=350, y=50)
+#  Labels
+website_name_label = customtkinter.CTkLabel(right_pane, text="Website:", font=(MAIN_FONT, 18))
+website_name_label.place(x=50, y=125)
+url_label = customtkinter.CTkLabel(right_pane, text="URL:", font=(MAIN_FONT, 18))
+url_label.place(x=50, y=160)
+email_label = customtkinter.CTkLabel(right_pane, text="Email/Username:", font=(MAIN_FONT, 18))
+email_label.place(x=50, y=195)
+password_label = customtkinter.CTkLabel(right_pane, text="Password:", font=(MAIN_FONT, 18))
+password_label.place(x=50, y=230)
+
+# #  Entries
+# website_input = Entry(width=32)
+# website_input.focus()
+# website_input.grid(column=1, row=1, columnspan=1)
+# email_input = Entry(width=55)
+# email_input.insert(0, "buddhika@gmail.com")
+# email_input.grid(column=1, row=2, columnspan=2)
+# password_input = Entry(width=32)
+# password_input.grid(column=1, row=3)
+#
+# #  Buttons
+# password_btn = Button(text="Generate Password", width=18, command=password_gen)
+# password_btn.grid(column=2, row=3)
+# add_btn = Button(width=48, text="Add", command=save)
+# add_btn.grid(column=1, row=4, columnspan=2)
+# search_btn = Button(text="Search", width=18, command=search)
+# search_btn.grid(column=2, row=1)
+
+
 
 
 
