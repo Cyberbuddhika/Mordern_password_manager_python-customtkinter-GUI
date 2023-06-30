@@ -1,15 +1,8 @@
 import tkinter as tk
+from tkinter import messagebox
 import customtkinter
 from password_strength import password_strength
 from password_generator import password_gen
-
-
-# ------Showing Generating password----------------
-def showing_generated_password():
-    generated_password = password_gen()
-    password_entry.delete(0, tk.END)  # Clear the existing password
-    password_entry.insert(tk.END, generated_password)
-    showing_password_strength(generated_password)
 
 
 # ------showing password strength----------------
@@ -43,6 +36,10 @@ BTN_TXT_COLOR = "White"
 MAIN_FONT_SIZE = 22
 SECOND_FONT_SIZE = 12
 default_email = "buddhika@gmail.com"
+num_of_letters = 8
+num_of_symbols = 2
+num_of_numbers = 2
+length_of_password = 12
 
 passwords_saved = True
 
@@ -95,12 +92,104 @@ add_password_label = customtkinter.CTkLabel(right_pane, text="+ Add a Password",
                                             font=(MAIN_FONT, MAIN_FONT_SIZE))
 add_password_label.place(x=180, y=50)
 
+
 # ------Add password form----------------
 
+# ------Showing Generating password----------------
+def showing_generated_password():
+    global length_of_password
+    length_of_password = password_length_entry.get()
+    if length_of_password == "":
+        length_of_password = 12
+        password_length_entry.insert(tk.END, 12)
+    elif int(length_of_password) > 40:
+        length_of_password = 40
+        error_message = "Password length cannot be bigger than 40."
+        messagebox.showerror("Incorrect password length", error_message)
+    else:
+        length_of_password = int(password_length_entry.get())
+
+    if length_of_password >= num_of_letters + num_of_symbols + num_of_numbers:
+        generated_password = password_gen(num_of_letters, num_of_symbols, num_of_numbers, length_of_password)
+        password_entry.delete(0, tk.END)  # Clear the existing password
+        password_entry.insert(tk.END, generated_password)
+        showing_password_strength(generated_password)
+    else:
+        error_message = "Please increase the password length or reduce the number of letters, symbols, or numbers."
+        messagebox.showerror("Insufficient password length", error_message)
+
+
+
+# ------Settings for random password generator----------------
+
+# Labels
+
+Password_Generator_Settings_label = customtkinter.CTkLabel(right_pane, text="Customize Your Generated Password",
+                                                           font=(MAIN_FONT, 14, "underline"))
+Password_Generator_Settings_label.place(x=100, y=395)
+password_length_label = customtkinter.CTkLabel(right_pane, text="Select the length of your password (maximum 40):",
+                                               font=(MAIN_FONT, SECOND_FONT_SIZE))
+password_length_label.place(x=100, y=430)
+Number_of_letters_label = customtkinter.CTkLabel(right_pane,
+                                                 text="Select number of letters for your password (maximum 20):",
+                                                 font=(MAIN_FONT, SECOND_FONT_SIZE))
+Number_of_letters_label.place(x=100, y=455)
+Number_of_symbols_label = customtkinter.CTkLabel(right_pane,
+                                                 text="Select number of symbols for your Password (maximum 08):",
+                                                 font=(MAIN_FONT, SECOND_FONT_SIZE))
+Number_of_symbols_label.place(x=100, y=480)
+Number_of_numbers_label = customtkinter.CTkLabel(right_pane,
+                                                 text="Select number of numbers for your Password (maximum 08):",
+                                                 font=(MAIN_FONT, SECOND_FONT_SIZE))
+Number_of_numbers_label.place(x=100, y=505)
+
+# Entry
+
+password_length_entry = customtkinter.CTkEntry(right_pane, width=50, height=20, font=(MAIN_FONT, SECOND_FONT_SIZE), fg_color="#3a7ebf")
+password_length_entry.place(x=450, y=430)
+password_length_entry.insert(tk.END, 12)
+
+
+#  Dropdowns
+
+def num_letters_callback(choice):
+    global num_of_letters
+    num_of_letters = int(choice)
+
+
+num_letters = customtkinter.CTkOptionMenu(app, values=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"], width=50, height=20,
+                                          command=num_letters_callback)
+num_letters.set("8")
+num_letters.place(x=700, y=460)
+
+
+def num_symbols_callback(choice):
+    global num_of_symbols
+    num_of_symbols = int(choice)
+
+
+num_symbols = customtkinter.CTkOptionMenu(app, values=["1", "2", "3", "4", "5", "6", "7", "8"], width=50, height=20,
+                                          command=num_symbols_callback)
+num_symbols.set("2")
+num_symbols.place(x=700, y=485)
+
+
+def num_numbers_callback(choice):
+    global num_of_numbers
+    num_of_numbers = int(choice)
+
+
+num_number = customtkinter.CTkOptionMenu(app, values=["1", "2", "3", "4", "5", "6", "7", "8"], width=50, height=20,
+                                         command=num_numbers_callback)
+num_number.set("2")
+num_number.place(x=700, y=510)
+
+#---------Add Password section----------
+
 #  Labels
-website_name_label = customtkinter.CTkLabel(right_pane, text="Website:", font=(MAIN_FONT, SECOND_FONT_SIZE))
+website_name_label = customtkinter.CTkLabel(right_pane, text="Website Name:", font=(MAIN_FONT, SECOND_FONT_SIZE))
 website_name_label.place(x=50, y=125)
-url_label = customtkinter.CTkLabel(right_pane, text="URL:", font=(MAIN_FONT, SECOND_FONT_SIZE))
+url_label = customtkinter.CTkLabel(right_pane, text="Website Address(URL):", font=(MAIN_FONT, SECOND_FONT_SIZE))
 url_label.place(x=50, y=160)
 email_label = customtkinter.CTkLabel(right_pane, text="Email/Username:", font=(MAIN_FONT, SECOND_FONT_SIZE))
 email_label.place(x=50, y=195)
@@ -137,5 +226,14 @@ cancel_button.place(x=360, y=350)
 
 # Bind the checking_password_strength function to the KeyRelease event of the entry widget
 password_entry.bind("<KeyRelease>", showing_password_strength)
+
+
+# ------Setting Focus on website name entry on password form----------------
+def set_focus():
+    website_entry.focus_set()
+
+
+# Call the set_focus function after a short delay
+app.after(100, set_focus)
 
 app.mainloop()

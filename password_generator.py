@@ -1,18 +1,19 @@
-from random import choice, randint, shuffle
+from random import choices, shuffle
 
+def password_gen(num_of_letters, num_of_symbols, num_of_numbers, length_of_password):
+    letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    numbers = '0123456789'
+    symbols = '!#$%&()*+'
 
-def password_gen():
-    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
-               'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-               'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-    numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-    symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
-    #  creating random generated lists for letters, numbers & symbols
-    password_letters = [choice(letters) for letter in range(randint(8, 10))]
-    password_symbols = [choice(symbols) for symbol in range(randint(2, 4))]
-    password_numbers = [choice(numbers) for num in range(randint(2, 4))]
-    #  Merging all 3 lists
+    password_letters = choices(letters, k=num_of_letters)
+    password_symbols = choices(symbols, k=num_of_symbols)
+    password_numbers = choices(numbers, k=num_of_numbers)
+
     password_list = password_letters + password_symbols + password_numbers
-    shuffle(password_list)  # shuffle
-    password = "".join(password_list)  # making one string from a list
+    password_list += choices(letters + numbers + symbols, k=length_of_password - len(password_list))
+    shuffle(password_list)
+    password = ''.join(password_list)
+
     return password
+
+
