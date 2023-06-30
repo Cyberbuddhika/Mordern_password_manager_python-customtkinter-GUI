@@ -24,6 +24,15 @@ def showing_password_strength(event):
         password_strength_label.configure(text=strength_text, text_color="red")
 
 
+# ------Clearing add password section----------------
+def Clearing_password_sec():
+    website_entry.delete(0, tk.END)
+    url_entry.delete(0, tk.END)
+    email_entry.delete(0, tk.END)
+    password_entry.delete(0, tk.END)
+    email_entry.insert(tk.END, default_email)
+
+
 # ------Setting up defaults ----------------
 
 MAIN_FONT = "Ubuntu"
@@ -33,6 +42,7 @@ BTN_FG_COLOR = "#0c526b"
 BTN_TXT_COLOR = "White"
 MAIN_FONT_SIZE = 22
 SECOND_FONT_SIZE = 12
+default_email = "buddhika@gmail.com"
 
 passwords_saved = True
 
@@ -42,6 +52,7 @@ app.geometry("800x600")
 app.title("Password Manager")
 
 # -------Left Pane--------------------
+
 # Frame
 left_pane = tk.Frame(app)
 left_pane.place(x=0, y=0, width=300, height=600)
@@ -97,7 +108,7 @@ password_label = customtkinter.CTkLabel(right_pane, text="Password:", font=(MAIN
 
 # Password strength showing
 password_label.place(x=50, y=230)
-password_strength_label = customtkinter.CTkLabel(right_pane, text="Strong password!!!",
+password_strength_label = customtkinter.CTkLabel(right_pane, text="",
                                                  font=(MAIN_FONT, SECOND_FONT_SIZE, "bold"))
 password_strength_label.place(x=200, y=260)
 
@@ -107,7 +118,7 @@ website_entry.place(x=200, y=125)
 url_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
 url_entry.place(x=200, y=160)
 email_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
-email_entry.insert(tk.END, "buddhika@gmail.com")
+email_entry.insert(tk.END, default_email)
 email_entry.place(x=200, y=195)
 password_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
 password_entry.place(x=200, y=230)
@@ -121,7 +132,7 @@ save_button = customtkinter.CTkButton(right_pane, text="Save", fg_color=BTN_FG_C
                                       width=75)
 save_button.place(x=275, y=350)
 cancel_button = customtkinter.CTkButton(right_pane, text="Cancel", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
-                                        width=75)
+                                        width=75, command=Clearing_password_sec)
 cancel_button.place(x=360, y=350)
 
 # Bind the checking_password_strength function to the KeyRelease event of the entry widget
