@@ -4,6 +4,36 @@ import customtkinter
 from password_strength import password_strength
 from password_generator import password_gen
 
+# ------Setting up defaults ----------------
+
+MAIN_FONT = "Ubuntu"
+LEFT_BG_COLOR = "#08303b"
+RIGHT_BG_COLOR = "#042430"
+BTN_FG_COLOR = "#0c526b"
+BTN_TXT_COLOR = "White"
+MAIN_FONT_SIZE = 22
+SECOND_FONT_SIZE = 12
+default_email = "buddhika@gmail.com"
+num_of_letters = 8
+num_of_symbols = 2
+num_of_numbers = 2
+length_of_password = 12
+
+#  Creating main app_window
+app = customtkinter.CTk(fg_color="#042430")
+app.geometry("800x600")
+app.title("Password Manager")
+
+# ------Default email change----------------
+def change_default_email():
+    global default_email
+    change_email_dialog = customtkinter.CTkInputDialog(text=f"Your current email is {default_email}\nPlease type your new email:", title="Change Default Email")
+    new_email = change_email_dialog.get_input()  # waits for input
+    default_email = new_email
+    email_entry.delete(0, tk.END)
+    email_entry.insert(0, default_email)
+    ## once we finish login page implement json to save this email
+
 
 # ------showing password strength----------------
 def showing_password_strength(event):
@@ -23,30 +53,10 @@ def Clearing_password_sec():
     url_entry.delete(0, tk.END)
     email_entry.delete(0, tk.END)
     password_entry.delete(0, tk.END)
-    email_entry.insert(tk.END, default_email)
+    global default_email  # Add this line to access the global default_email variable
+    email_entry.insert(tk.END, default_email)  # Insert the updated default email
 
 
-# ------Setting up defaults ----------------
-
-MAIN_FONT = "Ubuntu"
-LEFT_BG_COLOR = "#08303b"
-RIGHT_BG_COLOR = "#042430"
-BTN_FG_COLOR = "#0c526b"
-BTN_TXT_COLOR = "White"
-MAIN_FONT_SIZE = 22
-SECOND_FONT_SIZE = 12
-default_email = "buddhika@gmail.com"
-num_of_letters = 8
-num_of_symbols = 2
-num_of_numbers = 2
-length_of_password = 12
-
-passwords_saved = True
-
-#  Creating main app_window
-app = customtkinter.CTk(fg_color="#042430")
-app.geometry("800x600")
-app.title("Password Manager")
 
 # -------Left Pane--------------------
 
@@ -75,7 +85,7 @@ change_login_button = customtkinter.CTkButton(left_pane, text="Change Login", fg
                                               text_color=BTN_TXT_COLOR)
 change_login_button.place(x=50, y=260)
 change_email_button = customtkinter.CTkButton(left_pane, text="Change Default Email", fg_color=BTN_FG_COLOR,
-                                              text_color=BTN_TXT_COLOR)
+                                              text_color=BTN_TXT_COLOR, command=change_default_email)
 change_email_button.place(x=50, y=295)
 info_button = customtkinter.CTkButton(left_pane, text="Info", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR)
 info_button.place(x=50, y=330)
@@ -119,7 +129,6 @@ def showing_generated_password():
         messagebox.showerror("Insufficient password length", error_message)
 
 
-
 # ------Settings for random password generator----------------
 
 # Labels
@@ -145,7 +154,8 @@ Number_of_numbers_label.place(x=100, y=505)
 
 # Entry
 
-password_length_entry = customtkinter.CTkEntry(right_pane, width=50, height=20, font=(MAIN_FONT, SECOND_FONT_SIZE), fg_color="#3a7ebf")
+password_length_entry = customtkinter.CTkEntry(right_pane, width=50, height=20, font=(MAIN_FONT, SECOND_FONT_SIZE),
+                                               fg_color="#3a7ebf")
 password_length_entry.place(x=450, y=430)
 password_length_entry.insert(tk.END, 12)
 
@@ -157,7 +167,9 @@ def num_letters_callback(choice):
     num_of_letters = int(choice)
 
 
-num_letters = customtkinter.CTkOptionMenu(app, values=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"], width=50, height=20,
+num_letters = customtkinter.CTkOptionMenu(app,
+                                          values=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
+                                                  "14", "15", "16", "17", "18", "19", "20"], width=50, height=20,
                                           command=num_letters_callback)
 num_letters.set("8")
 num_letters.place(x=700, y=460)
@@ -184,7 +196,7 @@ num_number = customtkinter.CTkOptionMenu(app, values=["1", "2", "3", "4", "5", "
 num_number.set("2")
 num_number.place(x=700, y=510)
 
-#---------Add Password section----------
+# ---------Add Password section----------
 
 #  Labels
 website_name_label = customtkinter.CTkLabel(right_pane, text="Website Name:", font=(MAIN_FONT, SECOND_FONT_SIZE))
