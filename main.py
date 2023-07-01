@@ -1,8 +1,12 @@
+import tkinter
 import tkinter as tk
 from tkinter import messagebox
+import _tkinter
 import customtkinter
 from password_strength import password_strength
 from password_generator import password_gen
+import pyperclip
+import json
 
 # ------Setting up defaults ----------------
 
@@ -24,15 +28,72 @@ app = customtkinter.CTk(fg_color="#042430")
 app.geometry("800x600")
 app.title("Password Manager")
 
+
 # ------Default email change----------------
 def change_default_email():
     global default_email
-    change_email_dialog = customtkinter.CTkInputDialog(text=f"Your current email is {default_email}\nPlease type your new email:", title="Change Default Email")
+    change_email_dialog = customtkinter.CTkInputDialog(
+        text=f"Your current email is {default_email}\nPlease type your new email:", title="Change Default Email")
+
     new_email = change_email_dialog.get_input()  # waits for input
-    default_email = new_email
-    email_entry.delete(0, tk.END)
-    email_entry.insert(0, default_email)
-    ## once we finish login page implement json to save this email
+    if new_email:
+        default_email = new_email
+        email_entry.delete(0, tk.END)
+        email_entry.insert(0, default_email)
+    else:
+        default_email = default_email
+    # once we finish login page implement json to save this email
+
+
+# ---------------------------- SAVE PASSWORD ------------------------------- #
+def save():
+    try:
+        website_input = website_entry.get()
+        website = website_input.lower()
+    except AttributeError:
+        website = ""
+    finally:
+        url = url_entry.get()
+        email = email_entry.get()
+        password = password_entry.get()
+        new_data = {
+            website: {
+                "url": url,
+                "email": email,
+                "password": password
+            }
+        }
+
+    # Validating for empty fields
+    if len(website) == 0 or len(email) == 0 or len(password) == 0:
+        messagebox.showerror("Empty Fields", "Please fill all the input fields")
+    else:
+        try:
+            with open('data.json', mode='r') as data_file:
+                # Read old data
+                data = json.load(data_file)
+        except FileNotFoundError:
+            data = new_data
+
+        if website in data:
+            response = messagebox.askyesno(title="Duplicate password",
+                                           message=f"You have a previously saved password for {website}.\n\nDo you want to update it with the new password?")
+            if response:
+                # Update old data with new data
+                data[website]["url"] = url
+                data[website]["email"] = email
+                data[website]["password"] = password
+                with open('data.json', mode='w') as data_file:
+                    json.dump(data, data_file, indent=4)
+                    Clearing_password_sec()
+                    messagebox.showinfo("Password Updated Successfully", f"Password for {website} has been updated.")
+        else:
+            # Save new data
+            data.update(new_data)
+            with open('data.json', mode='w') as data_file:
+                json.dump(data, data_file, indent=4)
+                Clearing_password_sec()
+                messagebox.showinfo("Password Saved Successfully", f"New password for {website} has been saved.")
 
 
 # ------showing password strength----------------
@@ -55,7 +116,6 @@ def Clearing_password_sec():
     password_entry.delete(0, tk.END)
     global default_email  # Add this line to access the global default_email variable
     email_entry.insert(tk.END, default_email)  # Insert the updated default email
-
 
 
 # -------Left Pane--------------------
@@ -124,6 +184,7 @@ def showing_generated_password():
         password_entry.delete(0, tk.END)  # Clear the existing password
         password_entry.insert(tk.END, generated_password)
         showing_password_strength(generated_password)
+        pyperclip.copy(generated_password)  # using pyperclip to add password to clipboard
     else:
         error_message = "Please increase the password length or reduce the number of letters, symbols, or numbers."
         messagebox.showerror("Insufficient password length", error_message)
@@ -230,7 +291,7 @@ generate_passwords_button = customtkinter.CTkButton(right_pane, text="Generate S
                                                     command=showing_generated_password)
 generate_passwords_button.place(x=200, y=300)
 save_button = customtkinter.CTkButton(right_pane, text="Save", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
-                                      width=75)
+                                      width=75, command=save)
 save_button.place(x=275, y=350)
 cancel_button = customtkinter.CTkButton(right_pane, text="Cancel", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
                                         width=75, command=Clearing_password_sec)
