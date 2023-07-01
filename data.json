@@ -18,5 +18,40 @@
         "url": "youtube.com",
         "email": "buddhika@gmail.com",
         "password": "%G7E)UYxA6XP"
+    },
+    "gmail": {
+        "url": "",
+        "email": "buddhika@gmail.com",
+        "password": "LJ$Q6F3zJ*an"
+    },
+    "github": {
+        "url": "",
+        "email": "buddhika@gmail.com",
+        "password": "Ku0G)6tTZAe$"
+    },
+    "adobe": {
+        "url": "",
+        "email": "buddhika@gmail.com",
+        "password": "cz*$uHav6kT3"
+    },
+    "clickup": {
+        "url": "",
+        "email": "buddhika@gmail.com",
+        "password": "AF$9Tz&D7Dba"
+    },
+    "discord": {
+        "url": "",
+        "email": "buddhika@gmail.com",
+        "password": "0bl&z(giIdv2"
+    },
+    "anydesk": {
+        "url": "",
+        "email": "buddhika@gmail.com",
+        "password": "(JL3dv0&vSaA"
+    },
+    "steam": {
+        "url": "",
+        "email": "buddhika@gmail.com",
+        "password": "1*HPH8KV!Zfh"
     }
 }

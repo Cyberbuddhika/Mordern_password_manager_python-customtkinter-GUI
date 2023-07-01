@@ -1,12 +1,11 @@
-import tkinter
 import tkinter as tk
 from tkinter import messagebox
-import _tkinter
 import customtkinter
 from password_strength import password_strength
 from password_generator import password_gen
 import pyperclip
 import json
+from view_passwords import ViewPasswordWindow
 
 # ------Setting up defaults ----------------
 
@@ -47,15 +46,15 @@ def change_default_email():
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def save():
+    website_input = website_entry.get()
+    url = url_entry.get()
+    email = email_entry.get()
+    password = password_entry.get()
     try:
-        website_input = website_entry.get()
         website = website_input.lower()
     except AttributeError:
         website = ""
-    finally:
-        url = url_entry.get()
-        email = email_entry.get()
-        password = password_entry.get()
+    else:
         new_data = {
             website: {
                 "url": url,
@@ -63,37 +62,39 @@ def save():
                 "password": password
             }
         }
+        # Validating for empty fields
+        if len(website) == 0 or len(email) == 0 or len(password) == 0:
+            messagebox.showerror("Empty Fields", "Please fill all the input fields")
+        else:
+            try:
+                with open('data.json', mode='r') as data_file:
+                    # Read old data
+                    data = json.load(data_file)
+            except FileNotFoundError:
+                data = new_data
 
-    # Validating for empty fields
-    if len(website) == 0 or len(email) == 0 or len(password) == 0:
-        messagebox.showerror("Empty Fields", "Please fill all the input fields")
-    else:
-        try:
-            with open('data.json', mode='r') as data_file:
-                # Read old data
-                data = json.load(data_file)
-        except FileNotFoundError:
-            data = new_data
-
-        if website in data:
-            response = messagebox.askyesno(title="Duplicate password",
-                                           message=f"You have a previously saved password for {website}.\n\nDo you want to update it with the new password?")
-            if response:
-                # Update old data with new data
-                data[website]["url"] = url
-                data[website]["email"] = email
-                data[website]["password"] = password
+            if website in data:
+                response = messagebox.askyesno(title="Duplicate password",
+                                               message=f"You have a previously saved password for {website}.\n\nDo you "
+                                                       f"want to update it with the new password?")
+                if response:
+                    # Update old data with new data
+                    data[website]["url"] = url
+                    data[website]["email"] = email
+                    data[website]["password"] = password
+                    with open('data.json', mode='w') as data_file:
+                        json.dump(data, data_file, indent=4)
+                        Clearing_password_sec()
+                        messagebox.showinfo("Password Updated Successfully",
+                                            f"Password for {website} has been updated.")
+            else:
+                # Save new data
+                data.update(new_data)
                 with open('data.json', mode='w') as data_file:
                     json.dump(data, data_file, indent=4)
                     Clearing_password_sec()
-                    messagebox.showinfo("Password Updated Successfully", f"Password for {website} has been updated.")
-        else:
-            # Save new data
-            data.update(new_data)
-            with open('data.json', mode='w') as data_file:
-                json.dump(data, data_file, indent=4)
-                Clearing_password_sec()
-                messagebox.showinfo("Password Saved Successfully", f"New password for {website} has been saved.")
+                    messagebox.showinfo("Password Saved Successfully", f"New password for {website} has been saved.")
+                    set_focus()
 
 
 # ------showing password strength----------------
@@ -118,6 +119,14 @@ def Clearing_password_sec():
     email_entry.insert(tk.END, default_email)  # Insert the updated default email
 
 
+# ------Open View password window----------------
+def view_passwords():
+    view_window = ViewPasswordWindow(app)
+    view_window.transient(app)
+    view_window.grab_set()
+    app.wait_window(view_window)
+
+
 # -------Left Pane--------------------
 
 # Frame
@@ -139,7 +148,7 @@ welcome_label2.place(x=50, y=165)
 
 # buttons
 view_passwords_button = customtkinter.CTkButton(left_pane, text="View Passwords", fg_color=BTN_FG_COLOR,
-                                                text_color=BTN_TXT_COLOR)
+                                                text_color=BTN_TXT_COLOR, command=view_passwords)
 view_passwords_button.place(x=50, y=225)
 change_login_button = customtkinter.CTkButton(left_pane, text="Change Login", fg_color=BTN_FG_COLOR,
                                               text_color=BTN_TXT_COLOR)
