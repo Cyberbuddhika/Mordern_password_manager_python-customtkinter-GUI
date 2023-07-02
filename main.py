@@ -121,10 +121,22 @@ def Clearing_password_sec():
 
 # ------Open View password window----------------
 def view_passwords():
+    # Get the coordinates of the main window
+    main_window_x = app.winfo_x()
+    main_window_y = app.winfo_y()
+
+    # Calculate the coordinates for the "View Password" window
+    view_window_x = main_window_x
+    view_window_y = main_window_y
+
     view_window = ViewPasswordWindow(app)
+    view_window.geometry(f"+{view_window_x}+{view_window_y}")  # Set the coordinates for the window
     view_window.transient(app)
     view_window.grab_set()
+    app.withdraw()  # Hide the main window
     app.wait_window(view_window)
+    app.deiconify()  # Show the main window again after the password window is closed
+
 
 
 # -------Left Pane--------------------
@@ -276,9 +288,9 @@ url_label.place(x=50, y=160)
 email_label = customtkinter.CTkLabel(right_pane, text="Email/Username:", font=(MAIN_FONT, SECOND_FONT_SIZE))
 email_label.place(x=50, y=195)
 password_label = customtkinter.CTkLabel(right_pane, text="Password:", font=(MAIN_FONT, SECOND_FONT_SIZE))
+password_label.place(x=50, y=230)
 
 # Password strength showing
-password_label.place(x=50, y=230)
 password_strength_label = customtkinter.CTkLabel(right_pane, text="",
                                                  font=(MAIN_FONT, SECOND_FONT_SIZE, "bold"))
 password_strength_label.place(x=200, y=260)

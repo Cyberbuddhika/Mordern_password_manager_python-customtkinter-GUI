@@ -1,57 +1,27 @@
 {
-    "google": {
-        "url": "",
-        "email": "buddhika@gmail.com",
-        "password": "*8PsJ+sjJU0f"
-    },
-    "amazon": {
-        "url": "amazon.com",
-        "email": "buddhika@gmail.com",
-        "password": "hG9ceS#5%TFS"
-    },
-    "apple": {
-        "url": "apple.com",
-        "email": "buddhika@gmail.com",
-        "password": "PCz%XnHC12*Y"
-    },
-    "youtube": {
-        "url": "youtube.com",
-        "email": "buddhika@gmail.com",
-        "password": "%G7E)UYxA6XP"
-    },
-    "gmail": {
-        "url": "",
-        "email": "buddhika@gmail.com",
-        "password": "LJ$Q6F3zJ*an"
-    },
-    "github": {
-        "url": "",
-        "email": "buddhika@gmail.com",
-        "password": "Ku0G)6tTZAe$"
-    },
-    "adobe": {
-        "url": "",
-        "email": "buddhika@gmail.com",
-        "password": "cz*$uHav6kT3"
-    },
     "clickup": {
-        "url": "",
+        "url": "www.clickup.com/login",
         "email": "buddhika@gmail.com",
         "password": "AF$9Tz&D7Dba"
     },
-    "discord": {
-        "url": "",
+    "amazon": {
+        "url": "www.amazon.com",
         "email": "buddhika@gmail.com",
-        "password": "0bl&z(giIdv2"
-    },
-    "anydesk": {
-        "url": "",
-        "email": "buddhika@gmail.com",
-        "password": "(JL3dv0&vSaA"
+        "password": "y4AkOvB&h3$c"
     },
     "steam": {
+        "url": "www.steam.com/login",
+        "email": "buddhika@gmail.com",
+        "password": "pw&4Lu)6oYIX"
+    },
+    "adobe": {
+        "url": "www.adobe.com",
+        "email": "buddhika@gmail.com",
+        "password": "82bMMTxpOy(f+0LMSk"
+    },
+    "microsoft": {
         "url": "",
         "email": "buddhika@gmail.com",
-        "password": "1*HPH8KV!Zfh"
+        "password": "yJ20#2mKeBnkMzLdC)"
     }
 }
