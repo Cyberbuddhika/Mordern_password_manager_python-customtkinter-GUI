@@ -32,11 +32,6 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
         left_pane.place(x=0, y=0, width=300, height=600)
         left_pane.configure(bg=LEFT_BG_COLOR)
 
-        canvas = tk.Canvas(left_pane, width=100, height=100, highlightthickness=0, background=LEFT_BG_COLOR)
-        password_logo = tk.PhotoImage(file="icons8-password-100.png")
-        canvas.create_image(50, 50, image=password_logo)
-        canvas.place(x=75, y=25)
-
         self.label = customtkinter.CTkLabel(left_pane, text="View Passwords", font=("Ubuntu", 22), text_color="White")
         self.label.place(x=50, y=30)
 

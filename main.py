@@ -6,6 +6,9 @@ from password_generator import password_gen
 import pyperclip
 import json
 from view_passwords import ViewPasswordWindow
+from signup import ViewSignupWindow
+from login import ViewLoginWindow
+import os.path
 
 # ------Setting up defaults ----------------
 
@@ -16,16 +19,64 @@ BTN_FG_COLOR = "#0c526b"
 BTN_TXT_COLOR = "White"
 MAIN_FONT_SIZE = 22
 SECOND_FONT_SIZE = 12
-default_email = "buddhika@gmail.com"
+user_name = ""
+default_email = ""
 num_of_letters = 8
 num_of_symbols = 2
 num_of_numbers = 2
 length_of_password = 12
 
+
 #  Creating main app_window
 app = customtkinter.CTk(fg_color="#042430")
 app.geometry("800x600")
 app.title("Password Manager")
+
+
+# ------Open sing-up window----------------
+def view_signup():
+    signup_window = ViewSignupWindow(app)
+    signup_window.geometry(f"+{app.winfo_x()}+{app.winfo_y()}")  # Set the coordinates for the window
+    signup_window.transient(app)
+    signup_window.grab_set()
+    app.wait_window(signup_window)  # Wait for the signup window to close
+
+    app.deiconify()  # Show the main window again after the signup window is closed
+    view_login()
+
+
+# ------Open login window----------------
+def view_login():
+    login_window = ViewLoginWindow(app)
+    login_window.geometry(f"+{app.winfo_x()}+{app.winfo_y()}")  # Set the coordinates for the window
+    login_window.transient(app)
+    login_window.grab_set()
+    app.wait_window(login_window)  # Wait for the login window to close
+
+    if login_window.authenticated:
+        global default_email
+        global user_name
+        # Read login.json file and get username and email
+        with open('login.json') as data_file:
+            data = json.load(data_file)
+            login_name = list(data.keys())[0]
+            default_email = data[login_name]["email"]
+            user_name = login_name
+        # Proceed to the main window
+        # Implement your main window logic here
+        print("Main window opened")
+    else:
+        # Exit the application if not authenticated
+        app.destroy()
+
+
+# -------------Login Initialization------------------------------------
+
+
+if os.path.isfile("login.json"):
+    view_login()
+else:
+    view_signup()
 
 
 # ------Default email change----------------
@@ -138,7 +189,6 @@ def view_passwords():
     app.deiconify()  # Show the main window again after the password window is closed
 
 
-
 # -------Left Pane--------------------
 
 # Frame
@@ -155,7 +205,7 @@ canvas.place(x=75, y=25)
 welcome_label = customtkinter.CTkLabel(left_pane, text="Welcome Back!", fg_color="transparent",
                                        font=(MAIN_FONT, MAIN_FONT_SIZE))
 welcome_label.place(x=50, y=130)
-welcome_label2 = customtkinter.CTkLabel(left_pane, text="buddhika", font=(MAIN_FONT, MAIN_FONT_SIZE))
+welcome_label2 = customtkinter.CTkLabel(left_pane, text=user_name, font=(MAIN_FONT, MAIN_FONT_SIZE))
 welcome_label2.place(x=50, y=165)
 
 # buttons
@@ -164,12 +214,12 @@ view_passwords_button = customtkinter.CTkButton(left_pane, text="View Passwords"
 view_passwords_button.place(x=50, y=225)
 change_login_button = customtkinter.CTkButton(left_pane, text="Change Login", fg_color=BTN_FG_COLOR,
                                               text_color=BTN_TXT_COLOR)
-change_login_button.place(x=50, y=260)
-change_email_button = customtkinter.CTkButton(left_pane, text="Change Default Email", fg_color=BTN_FG_COLOR,
-                                              text_color=BTN_TXT_COLOR, command=change_default_email)
-change_email_button.place(x=50, y=295)
+# change_login_button.place(x=50, y=260)
+# change_email_button = customtkinter.CTkButton(left_pane, text="Change Default Email", fg_color=BTN_FG_COLOR,
+#                                               text_color=BTN_TXT_COLOR, command=change_default_email)
+# change_email_button.place(x=50, y=295)
 info_button = customtkinter.CTkButton(left_pane, text="Info", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR)
-info_button.place(x=50, y=330)
+info_button.place(x=50, y=260)
 
 # -------Right Pane--------------------
 
