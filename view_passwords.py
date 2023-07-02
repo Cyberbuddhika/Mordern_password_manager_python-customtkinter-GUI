@@ -3,6 +3,7 @@ from tkinter import messagebox
 import customtkinter
 from customtkinter import CTkToplevel
 import json
+import pyperclip
 
 MAIN_FONT = "Ubuntu"
 LEFT_BG_COLOR = "#08303b"
@@ -47,6 +48,14 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
         self.label = customtkinter.CTkLabel(left_pane, text="Recent Passwords", font=("Ubuntu", 15, "underline"),
                                             text_color="White")
         self.label.place(x=50, y=150)
+
+        def copy_to_clipboard(entry, name):
+            enable_entry()
+            value = entry.get()
+            pyperclip.copy(value)
+            disable_entry()
+            messagebox.showinfo("Copied to Clipboard", f"{name} is copied to clipboard")
+
 
         def clearing_password():
             enable_entry()
@@ -171,6 +180,7 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
         password_lock_label = customtkinter.CTkLabel(right_pane, text="🔒", font=(MAIN_FONT, SECOND_FONT_SIZE))
         password_lock_label.place(x=500, y=230)
 
+
         #  Entries
         website_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
         website_entry.place(x=200, y=125)
@@ -204,6 +214,23 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
                                                 width=140, command=clearing_password)
         cancel_button.place(x=360, y=320)
 
+        # clipboard buttons
+        url_clipboard_btn = customtkinter.CTkButton(right_pane, text="📋",
+                                                    fg_color=RIGHT_BG_COLOR,
+                                                    text_color=BTN_TXT_COLOR, width=15,
+                                                    command=lambda: copy_to_clipboard(url_entry, "URL"))
+        url_clipboard_btn.place(x=520, y=160)
+        email_clipboard_btn = customtkinter.CTkButton(right_pane, text="📋",
+                                                      fg_color=RIGHT_BG_COLOR,
+                                                      text_color=BTN_TXT_COLOR, width=15,
+                                                      command=lambda: copy_to_clipboard(email_entry, "Email"))
+        email_clipboard_btn.place(x=520, y=195)
+        password_clipboard_btn = customtkinter.CTkButton(right_pane, text="📋",
+                                                         fg_color=RIGHT_BG_COLOR,
+                                                         text_color=BTN_TXT_COLOR, width=15,
+                                                         command=lambda: copy_to_clipboard(password_entry, "Password"))
+        password_clipboard_btn.place(x=520, y=230)
+
         # Help text
 
         help_title_label = customtkinter.CTkLabel(right_pane, text="💡Help:", font=(MAIN_FONT, 12), text_color="White",
@@ -212,7 +239,7 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
 
         help_text = "To view a password, select a website from the list on the left or type in the 'Website Name' " \
                     "field and click " \
-                    "'Search Password' button.\n\n" \
+                    "'Search Password' button. You can click 📋 button to copy any field to clipboard.\n\n" \
                     "To edit a password, click the 'Edit Password' button and make the necessary changes. " \
                     "Then, click the 'Save' button to update the password.\n\n" \
                     "Note:  You can only edit one password at a time.\n\n" \
