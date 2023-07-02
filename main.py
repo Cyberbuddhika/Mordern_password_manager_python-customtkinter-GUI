@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import customtkinter
+from customtkinter import CTk
 from password_strength import password_strength
 from password_generator import password_gen
 import pyperclip
@@ -8,6 +9,7 @@ import json
 from view_passwords import ViewPasswordWindow
 from signup import ViewSignupWindow
 from login import ViewLoginWindow
+from info import ViewInfoWindow
 import os.path
 
 # ------Setting up defaults ----------------
@@ -189,6 +191,15 @@ def view_passwords():
     app.deiconify()  # Show the main window again after the password window is closed
 
 
+# -------Open info window--------------------
+def open_information_window():
+    view_window = ViewInfoWindow(app)
+    view_window.transient(app)
+    view_window.grab_set()
+    app.wait_window(view_window)
+    app.deiconify()  # Show the main window again after the password window is closed
+
+
 # -------Left Pane--------------------
 
 # Frame
@@ -212,14 +223,14 @@ welcome_label2.place(x=50, y=165)
 view_passwords_button = customtkinter.CTkButton(left_pane, text="View Passwords", fg_color=BTN_FG_COLOR,
                                                 text_color=BTN_TXT_COLOR, command=view_passwords)
 view_passwords_button.place(x=50, y=225)
-change_login_button = customtkinter.CTkButton(left_pane, text="Change Login", fg_color=BTN_FG_COLOR,
-                                              text_color=BTN_TXT_COLOR)
+# change_login_button = customtkinter.CTkButton(left_pane, text="Change Login", fg_color=BTN_FG_COLOR,
+#                                               text_color=BTN_TXT_COLOR)
 # change_login_button.place(x=50, y=260)
-# change_email_button = customtkinter.CTkButton(left_pane, text="Change Default Email", fg_color=BTN_FG_COLOR,
-#                                               text_color=BTN_TXT_COLOR, command=change_default_email)
-# change_email_button.place(x=50, y=295)
-info_button = customtkinter.CTkButton(left_pane, text="Info", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR)
-info_button.place(x=50, y=260)
+change_email_button = customtkinter.CTkButton(left_pane, text="Change Default Email", fg_color=BTN_FG_COLOR,
+                                              text_color=BTN_TXT_COLOR, command=change_default_email)
+change_email_button.place(x=50, y=260)
+info_button = customtkinter.CTkButton(left_pane, text="Info", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR, command=open_information_window)
+info_button.place(x=50, y=295)
 
 # -------Right Pane--------------------
 
