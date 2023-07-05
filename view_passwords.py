@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
 import customtkinter
-from customtkinter import CTkToplevel
 import json
 import pyperclip
+from cryptography.fernet import Fernet
 
 MAIN_FONT = "Ubuntu"
 LEFT_BG_COLOR = "#08303b"
@@ -22,7 +22,7 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
         self.configure(fg_color="#042430")
 
         # Load the saved passwords from data.json
-        with open('data.json', mode='r') as data_file:
+        with open('data/data.json', mode='r') as data_file:
             data = json.load(data_file)
 
         # -------Left Pane--------------------
@@ -50,7 +50,6 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
             pyperclip.copy(value)
             disable_entry()
             messagebox.showinfo("Copied to Clipboard", f"{name} is copied to clipboard")
-
 
         def clearing_password():
             enable_entry()
@@ -93,36 +92,56 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
                     messagebox.showerror("Empty Fields", "You need to find a password before editing.")
                 else:
                     # Load the existing data from the JSON file
-                    with open('data.json', mode='r') as data_file:
+                    with open('data/data.json', mode='r') as data_file:
                         data = json.load(data_file)
 
-                    # Update the specific entry in the data dictionary
-                    if website in data:
-                        data[website]["url"] = url
-                        data[website]["email"] = email
-                        data[website]["password"] = password
-                        with open('data.json', mode='w') as data_file:
-                            json.dump(data, data_file, indent=4)
-                            clearing_password()
-                            messagebox.showinfo("Password Updated Successfully",
-                                                f"Password for {website} has been updated.")
-                    else:
-                        messagebox.showerror("Website Not Found", "The website does not exist in the data file.")
+                        # Retrieve the encryption key
+                        with open('data/key.key', 'rb') as key_file:
+                            key = key_file.read()
+
+                        # Create a cipher
+                        cipher = Fernet(key)
+
+                        # Encrypt the password
+                        encrypted_pw = cipher.encrypt(password.encode()).decode('utf-8')
+
+                        # Update the specific entry in the data dictionary
+                        if website in data:
+                            data[website]["url"] = url
+                            data[website]["email"] = email
+                            data[website]["password"] = encrypted_pw
+                            with open('data/data.json', mode='w') as data_file:
+                                json.dump(data, data_file, indent=4)
+                                clearing_password()
+                                messagebox.showinfo("Password Updated Successfully",
+                                                    f"Password for {website} has been updated.")
+                        else:
+                            messagebox.showerror("Website Not Found", "The website does not exist in the data file.")
 
         def search_passwords(website):
             enable_entry()
             clearing_password()
-            with open('data.json', mode='r') as data_file:
+            with open('data/data.json', mode='r') as data_file:
                 data = json.load(data_file)
             if website in data:
                 email = data[website]["email"]
                 url = data[website]["url"]
-                password = data[website]["password"]
+                encrypted_password = data[website]["password"]
+
+                # Retrieve the encryption key
+                with open('data/key.key', 'rb') as key_file:
+                    key = key_file.read()
+
+                # Create a cipher
+                cipher = Fernet(key)
+
+                decrypted_password = cipher.decrypt(encrypted_password.encode()).decode('utf-8')
+
                 enable_entry()
                 website_entry.insert(tk.END, website)
                 url_entry.insert(tk.END, url)
                 email_entry.insert(tk.END, email)
-                password_entry.insert(tk.END, password)
+                password_entry.insert(tk.END, decrypted_password)
                 disable_entry()
 
             else:
@@ -138,7 +157,8 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
             website_name = website
             website_title = website.title()  # Convert the website to title case
             website_label = customtkinter.CTkButton(left_pane, text=website_title, fg_color=RIGHT_BG_COLOR,
-                                                    text_color="White", command=lambda website=website_name: search_passwords(website))
+                                                    text_color="White",
+                                                    command=lambda website=website_name: search_passwords(website))
             website_label.place(x=50, y=y_coordinate)
             y_coordinate += 30  # Increase the y-coordinate for the next label
             count += 1
@@ -175,15 +195,16 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
         password_lock_label = customtkinter.CTkLabel(right_pane, text="🔒", font=(MAIN_FONT, SECOND_FONT_SIZE))
         password_lock_label.place(x=500, y=230)
 
-
         #  Entries
         website_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
         website_entry.place(x=200, y=125)
         url_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE), state="readonly")
         url_entry.place(x=200, y=160)
-        email_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE), state="readonly")
+        email_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE),
+                                             state="readonly")
         email_entry.place(x=200, y=195)
-        password_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE), state="readonly")
+        password_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE),
+                                                state="readonly")
         password_entry.place(x=200, y=230)
 
         #  Get input from website name
@@ -191,15 +212,15 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
 
         #  Buttons
         search_passwords_button = customtkinter.CTkButton(right_pane, text="Search Password",
-                                                            fg_color=BTN_FG_COLOR,
-                                                            text_color=BTN_TXT_COLOR, width=140,
-                                                            command=lambda: search_passwords(website_entry.get())
-)
+                                                          fg_color=BTN_FG_COLOR,
+                                                          text_color=BTN_TXT_COLOR, width=140,
+                                                          command=lambda: search_passwords(website_entry.get())
+                                                          )
         search_passwords_button.place(x=200, y=280)
         edit_passwords_button = customtkinter.CTkButton(right_pane, text="Edit Password",
-                                                            fg_color=BTN_FG_COLOR,
-                                                            text_color=BTN_TXT_COLOR, width=140,
-                                                            command=enable_entry)
+                                                        fg_color=BTN_FG_COLOR,
+                                                        text_color=BTN_TXT_COLOR, width=140,
+                                                        command=enable_entry)
         edit_passwords_button.place(x=360, y=280)
         save_button = customtkinter.CTkButton(right_pane, text="Save", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
                                               width=140, command=save_password_edits)
@@ -229,7 +250,7 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
         # Help text
 
         help_title_label = customtkinter.CTkLabel(right_pane, text="💡Help:", font=(MAIN_FONT, 12), text_color="White",
-                                            wraplength=360, justify="left")
+                                                  wraplength=360, justify="left")
         help_title_label.place(x=50, y=380)
 
         help_text = "To view a password, select a website from the list on the left or type in the 'Website Name' " \
@@ -243,8 +264,6 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
         help_label = customtkinter.CTkLabel(right_pane, text=help_text, font=(MAIN_FONT, 12), text_color="White",
                                             wraplength=360, justify="left")
         help_label.place(x=125, y=380)
-
-
 
     def back_button_clicked(self):
         self.destroy()  # Close the view password window and return to the main window

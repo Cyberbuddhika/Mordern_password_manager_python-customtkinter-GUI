@@ -50,7 +50,7 @@ class ViewLoginWindow(customtkinter.CTkToplevel):
             login_name = user_name_entry.get()
             master_password = password_entry.get()
             encoded_password = master_password.encode("utf-8")
-            with open('login.json', mode='r') as data_file:
+            with open('data/login.json', mode='r') as data_file:
                 data = json.load(data_file)
             if login_name in data:
                 stored_password = data[login_name]["password"].encode("utf-8")
@@ -58,7 +58,12 @@ class ViewLoginWindow(customtkinter.CTkToplevel):
                     print("login successfully")
                     self.authenticated = True
                     self.close()
+                else:
+                    print("login failed! Incorrect password")
+                    messagebox.showerror("Login Failed", "Invalid login password.")
+
             else:
+                print("login failed!")
                 messagebox.showerror("Login Failed", "Invalid login credentials.")
 
         # -------Login Screen--------------------

@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
 import customtkinter
-from customtkinter import CTk
 from password_strength import password_strength
 from password_generator import password_gen
 import pyperclip
@@ -11,6 +10,7 @@ from signup import ViewSignupWindow
 from login import ViewLoginWindow
 from info import ViewInfoWindow
 import os.path
+from cryptography.fernet import Fernet
 
 # ------Setting up defaults ----------------
 
@@ -27,7 +27,6 @@ num_of_letters = 8
 num_of_symbols = 2
 num_of_numbers = 2
 length_of_password = 12
-
 
 #  Creating main app_window
 app = customtkinter.CTk(fg_color="#042430")
@@ -59,7 +58,7 @@ def view_login():
         global default_email
         global user_name
         # Read login.json file and get username and email
-        with open('login.json') as data_file:
+        with open('data/login.json') as data_file:
             data = json.load(data_file)
             login_name = list(data.keys())[0]
             default_email = data[login_name]["email"]
@@ -75,7 +74,7 @@ def view_login():
 # -------------Login Initialization------------------------------------
 
 
-if os.path.isfile("login.json"):
+if os.path.isfile("data/login.json"):
     view_login()
 else:
     view_signup()
@@ -103,6 +102,22 @@ def save():
     url = url_entry.get()
     email = email_entry.get()
     password = password_entry.get()
+    # Generate a key if not already generated
+    if not os.path.exists('data/key.key'):
+        key = Fernet.generate_key()
+        with open('data/key.key', 'wb') as key_file:
+            key_file.write(key)
+
+    # Retrieve the encryption key
+    with open('data/key.key', 'rb') as key_file:
+        key = key_file.read()
+
+    # Create a cipher
+    cipher = Fernet(key)
+
+    # Encrypt data
+    encrypted_pw = cipher.encrypt(password.encode()).decode('utf-8')
+
     try:
         website = website_input.lower()
     except AttributeError:
@@ -112,7 +127,7 @@ def save():
             website: {
                 "url": url,
                 "email": email,
-                "password": password
+                "password": encrypted_pw
             }
         }
         # Validating for empty fields
@@ -120,7 +135,7 @@ def save():
             messagebox.showerror("Empty Fields", "Please fill all the input fields")
         else:
             try:
-                with open('data.json', mode='r') as data_file:
+                with open('data/data.json', mode='r') as data_file:
                     # Read old data
                     data = json.load(data_file)
             except FileNotFoundError:
@@ -134,8 +149,8 @@ def save():
                     # Update old data with new data
                     data[website]["url"] = url
                     data[website]["email"] = email
-                    data[website]["password"] = password
-                    with open('data.json', mode='w') as data_file:
+                    data[website]["password"] = encrypted_pw
+                    with open('data/data.json', mode='w') as data_file:
                         json.dump(data, data_file, indent=4)
                         Clearing_password_sec()
                         messagebox.showinfo("Password Updated Successfully",
@@ -143,7 +158,7 @@ def save():
             else:
                 # Save new data
                 data.update(new_data)
-                with open('data.json', mode='w') as data_file:
+                with open('data/data.json', mode='w') as data_file:
                     json.dump(data, data_file, indent=4)
                     Clearing_password_sec()
                     messagebox.showinfo("Password Saved Successfully", f"New password for {website} has been saved.")
@@ -229,7 +244,8 @@ view_passwords_button.place(x=50, y=225)
 change_email_button = customtkinter.CTkButton(left_pane, text="Change Default Email", fg_color=BTN_FG_COLOR,
                                               text_color=BTN_TXT_COLOR, command=change_default_email)
 change_email_button.place(x=50, y=260)
-info_button = customtkinter.CTkButton(left_pane, text="Info", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR, command=open_information_window)
+info_button = customtkinter.CTkButton(left_pane, text="Info", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
+                                      command=open_information_window)
 info_button.place(x=50, y=295)
 
 # -------Right Pane--------------------

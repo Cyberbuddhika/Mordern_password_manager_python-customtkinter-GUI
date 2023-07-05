@@ -64,7 +64,7 @@ class ViewSignupWindow(customtkinter.CTkToplevel):
                 }
                 data = login_data
                 print(data)
-                with open('login.json', mode='w') as data_file:
+                with open('data/login.json', mode='w') as data_file:
                     json.dump(data, data_file, indent=4)
                     print(data)
                     clearing_password()
