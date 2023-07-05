@@ -1,11 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 import customtkinter
-from customtkinter import CTkToplevel
 import json
-from login import ViewLoginWindow
 import bcrypt
-
 
 MAIN_FONT = "Ubuntu"
 LEFT_BG_COLOR = "#08303b"
@@ -34,7 +31,6 @@ class ViewSignupWindow(customtkinter.CTkToplevel):
         self.label = customtkinter.CTkLabel(self, text="Welcome", font=("Ubuntu", 22), text_color="White")
         self.label.place(x=150, y=130)
 
-
         # Function to toggle the visibility of the password entry field
         def toggle_password_visibility():
             if password_entry.cget("show") == "*":
@@ -47,28 +43,29 @@ class ViewSignupWindow(customtkinter.CTkToplevel):
             password_entry.delete(0, tk.END)
             email_entry.delete(0, tk.END)
 
-        def sing_up():
+        def sign_up():
             login_name = user_name_entry.get()
             master_password = password_entry.get()
             encoded_password = master_password.encode("utf-8")
             hashed_pw = bcrypt.hashpw(encoded_password, bcrypt.gensalt(10)).decode("utf-8")
             email = email_entry.get()
+
             if len(login_name) == 0 or len(master_password) == 0 or len(email) == 0:
                 messagebox.showerror("Empty Fields", "Please fill all the input fields.")
             else:
                 login_data = {
-                    login_name: {
-                        "password": hashed_pw,
-                        "email": email,
-                    }
+                    "login_name": login_name,
+                    "password": hashed_pw,
+                    "email": email,
                 }
-                data = login_data
-                print(data)
+
+                data = {login_name: login_data}
+
                 with open('data/login.json', mode='w') as data_file:
                     json.dump(data, data_file, indent=4)
-                    print(data)
-                    clearing_password()
-                    self.close()
+
+                clearing_password()
+                self.close()
 
         # -------Sign-up Screen--------------------
 
@@ -79,7 +76,7 @@ class ViewSignupWindow(customtkinter.CTkToplevel):
         create_account_button = customtkinter.CTkButton(self, text="Create Account",
                                                         fg_color=BTN_FG_COLOR,
                                                         text_color=BTN_TXT_COLOR, width=200,
-                                                        command=sing_up)
+                                                        command=sign_up)
         create_account_button.place(x=100, y=360)
 
         self.label = customtkinter.CTkLabel(self, text="User Name:",
@@ -103,9 +100,17 @@ class ViewSignupWindow(customtkinter.CTkToplevel):
                                                        command=toggle_password_visibility)
         show_password_button.place(x=360, y=260)
 
+        # ------Binding Enter key to login----------------
+        self.bind("<Return>", lambda event: create_account_button.invoke())
+
+        # ------Setting Focus on user name on signup form----------------
+        def set_focus():
+            user_name_entry.focus_set()
+
+        # Call the set_focus function after a short delay
+        self.after(100, set_focus)
+
+
 
     def close(self):
         self.destroy()  # Close the view password window and return to the main window
-
-
-

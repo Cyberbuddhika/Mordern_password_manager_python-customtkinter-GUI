@@ -50,20 +50,21 @@ class ViewLoginWindow(customtkinter.CTkToplevel):
             login_name = user_name_entry.get()
             master_password = password_entry.get()
             encoded_password = master_password.encode("utf-8")
+
             with open('data/login.json', mode='r') as data_file:
                 data = json.load(data_file)
+
             if login_name in data:
                 stored_password = data[login_name]["password"].encode("utf-8")
                 if bcrypt.checkpw(encoded_password, stored_password):
-                    print("login successfully")
+                    print("Login successful")
                     self.authenticated = True
                     self.close()
                 else:
-                    print("login failed! Incorrect password")
+                    print("Login failed! Incorrect password")
                     messagebox.showerror("Login Failed", "Invalid login password.")
-
             else:
-                print("login failed!")
+                print("Login failed!")
                 messagebox.showerror("Login Failed", "Invalid login credentials.")
 
         # -------Login Screen--------------------
@@ -94,5 +95,17 @@ class ViewLoginWindow(customtkinter.CTkToplevel):
                                                        command=toggle_password_visibility)
         show_password_button.place(x=360, y=260)
 
+        # Bind the Enter key to the login button
+        self.bind("<Return>", lambda event: login_button.invoke())
+
+        # ------Setting Focus on user name on login form----------------
+        def set_focus():
+            user_name_entry.focus_set()
+
+        # Call the set_focus function after a short delay
+        self.after(100, set_focus)
+
+
     def close(self):
         self.destroy()  # Close the view password window and return to the main window
+

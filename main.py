@@ -83,17 +83,31 @@ else:
 # ------Default email change----------------
 def change_default_email():
     global default_email
-    change_email_dialog = customtkinter.CTkInputDialog(
-        text=f"Your current email is {default_email}\nPlease type your new email:", title="Change Default Email")
+    print("default email function initiated")
+    email = email_entry.get()
+    dialog = customtkinter.CTkInputDialog(
+        text=f"Your current email is: {email}\nEnter a new email as your default email", title="Change Default Email")
+    new_email = dialog.get_input()  # waits for input
+    # Step 1: Read the JSON file
+    with open('data/login.json', 'r') as file:
+        data = json.load(file)
+    print("step1")
+    # Step 2: Update the email value
+    for user_data in data.values():
+        if 'email' in user_data:
+            user_data['email'] = new_email
+            default_email = new_email
+            print("step2")
+            break
 
-    new_email = change_email_dialog.get_input()  # waits for input
-    if new_email:
-        default_email = new_email
-        email_entry.delete(0, tk.END)
-        email_entry.insert(0, default_email)
-    else:
-        default_email = default_email
-    # once we finish login page implement json to save this email
+    # Step 3: Write the modified data back to the JSON file
+    with open('data/login.json', 'w') as file:
+        json.dump(data, file, indent=4)
+        print("step3")
+
+    # Additional code to update the email_entry in your GUI
+    email_entry.delete(0, tk.END)
+    email_entry.insert(0, default_email)
 
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
@@ -403,6 +417,9 @@ password_entry.bind("<KeyRelease>", showing_password_strength)
 def set_focus():
     website_entry.focus_set()
 
+
+# ------Binding Enter key to save password function on password form----------------
+app.bind("<Return>", save)
 
 # Call the set_focus function after a short delay
 app.after(100, set_focus)
