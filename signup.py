@@ -4,7 +4,7 @@ import customtkinter
 from customtkinter import CTkToplevel
 import json
 from login import ViewLoginWindow
-
+import bcrypt
 
 
 MAIN_FONT = "Ubuntu"
@@ -34,15 +34,6 @@ class ViewSignupWindow(customtkinter.CTkToplevel):
         self.label = customtkinter.CTkLabel(self, text="Welcome", font=("Ubuntu", 22), text_color="White")
         self.label.place(x=150, y=130)
 
-        # ------Open login window----------------
-        def view_login():
-            signup_window = ViewLoginWindow(self)
-            signup_window.geometry(f"+{self.winfo_x()}+{self.winfo_y()}")  # Set the coordinates for the window
-            signup_window.transient(self)
-            signup_window.grab_set()
-            self.wait_window(signup_window)  # Wait for the signup window to close
-
-            self.deiconify()  # Show the main window again after the signup window is closed
 
         # Function to toggle the visibility of the password entry field
         def toggle_password_visibility():
@@ -59,13 +50,15 @@ class ViewSignupWindow(customtkinter.CTkToplevel):
         def sing_up():
             login_name = user_name_entry.get()
             master_password = password_entry.get()
+            encoded_password = master_password.encode("utf-8")
+            hashed_pw = bcrypt.hashpw(encoded_password, bcrypt.gensalt(10)).decode("utf-8")
             email = email_entry.get()
             if len(login_name) == 0 or len(master_password) == 0 or len(email) == 0:
                 messagebox.showerror("Empty Fields", "Please fill all the input fields.")
             else:
                 login_data = {
                     login_name: {
-                        "password": master_password,
+                        "password": hashed_pw,
                         "email": email,
                     }
                 }

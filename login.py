@@ -4,6 +4,7 @@ import customtkinter
 from customtkinter import CTkToplevel
 import json
 import os.path
+import bcrypt
 
 MAIN_FONT = "Ubuntu"
 LEFT_BG_COLOR = "#08303b"
@@ -48,11 +49,12 @@ class ViewLoginWindow(customtkinter.CTkToplevel):
         def login():
             login_name = user_name_entry.get()
             master_password = password_entry.get()
+            encoded_password = master_password.encode("utf-8")
             with open('login.json', mode='r') as data_file:
                 data = json.load(data_file)
             if login_name in data:
-                password = data[login_name]["password"]
-                if master_password == password:
+                stored_password = data[login_name]["password"].encode("utf-8")
+                if bcrypt.checkpw(encoded_password, stored_password):
                     print("login successfully")
                     self.authenticated = True
                     self.close()
