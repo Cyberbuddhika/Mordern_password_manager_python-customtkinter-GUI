@@ -31,6 +31,15 @@ python main.py
 - Edit the website, URL, email, or password and click the "Save Changes" button to update a password.
 - Select a website and click the "Delete" button to remove a password.
 
+## Screens
+![singup](https://dfp0yx826f0dh.cloudfront.net/password_manager_signup.png)
+![login](https://dfp0yx826f0dh.cloudfront.net/password_manager_login.png)
+![Main](https://dfp0yx826f0dh.cloudfront.net/password_manager_mainwindow1.png)
+![Main](https://dfp0yx826f0dh.cloudfront.net/password_manager_mainwindow2.png)
+![viewpasswords](https://dfp0yx826f0dh.cloudfront.net/password_manager_viewpasswords.png)
+
+
+
 
 
 ## Contributing
