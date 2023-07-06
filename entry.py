@@ -11,6 +11,7 @@ from login import ViewLoginWindow
 from info import ViewInfoWindow
 import os.path
 from cryptography.fernet import Fernet
+import datetime
 
 # ------Setting up defaults ----------------
 
@@ -83,31 +84,30 @@ else:
 # ------Default email change----------------
 def change_default_email():
     global default_email
-    print("default email function initiated")
     email = email_entry.get()
     dialog = customtkinter.CTkInputDialog(
-        text=f"Your current email is: {email}\nEnter a new email as your default email", title="Change Default Email")
+        text=f"Your current email is: {email}\n\nPlease enter a new email to set as your default email.", title="Change Default Email")
     new_email = dialog.get_input()  # waits for input
-    # Step 1: Read the JSON file
-    with open('data/login.json', 'r') as file:
-        data = json.load(file)
-    print("step1")
-    # Step 2: Update the email value
-    for user_data in data.values():
-        if 'email' in user_data:
-            user_data['email'] = new_email
-            default_email = new_email
-            print("step2")
-            break
+    if new_email:
+        # Step 1: Read the JSON file
+        with open('data/login.json', 'r') as file:
+            data = json.load(file)
+        # Step 2: Update the email value
+        for user_data in data.values():
+            if 'email' in user_data:
+                user_data['email'] = new_email
+                default_email = new_email
+                break
 
-    # Step 3: Write the modified data back to the JSON file
-    with open('data/login.json', 'w') as file:
-        json.dump(data, file, indent=4)
-        print("step3")
+        # Step 3: Write the modified data back to the JSON file
+        with open('data/login.json', 'w') as file:
+            json.dump(data, file, indent=4)
 
-    # Additional code to update the email_entry in your GUI
-    email_entry.delete(0, tk.END)
-    email_entry.insert(0, default_email)
+        # Additional code to update the email_entry in your GUI
+        email_entry.delete(0, tk.END)
+        email_entry.insert(0, default_email)
+    else:
+        print("user canceled or tried saving empty string. email haven't changed.")
 
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
@@ -116,6 +116,11 @@ def save():
     url = url_entry.get()
     email = email_entry.get()
     password = password_entry.get()
+
+    if not website_input or not email or not password:
+        messagebox.showerror("Empty Fields", "Please fill all the input fields")
+        return
+
     # Generate a key if not already generated
     if not os.path.exists('data/key.key'):
         key = Fernet.generate_key()
@@ -136,47 +141,45 @@ def save():
         website = website_input.lower()
     except AttributeError:
         website = ""
-    else:
-        new_data = {
-            website: {
-                "url": url,
-                "email": email,
-                "password": encrypted_pw
-            }
-        }
-        # Validating for empty fields
-        if len(website) == 0 or len(email) == 0 or len(password) == 0:
-            messagebox.showerror("Empty Fields", "Please fill all the input fields")
-        else:
-            try:
-                with open('data/data.json', mode='r') as data_file:
-                    # Read old data
-                    data = json.load(data_file)
-            except FileNotFoundError:
-                data = new_data
 
-            if website in data:
-                response = messagebox.askyesno(title="Duplicate password",
-                                               message=f"You have a previously saved password for {website}.\n\nDo you "
-                                                       f"want to update it with the new password?")
-                if response:
-                    # Update old data with new data
-                    data[website]["url"] = url
-                    data[website]["email"] = email
-                    data[website]["password"] = encrypted_pw
-                    with open('data/data.json', mode='w') as data_file:
-                        json.dump(data, data_file, indent=4)
-                        Clearing_password_sec()
-                        messagebox.showinfo("Password Updated Successfully",
-                                            f"Password for {website} has been updated.")
+    new_data = {
+        website: {
+            "url": url,
+            "email": email,
+            "password": encrypted_pw
+        }
+    }
+
+    try:
+        with open('data/data.json', mode='r') as data_file:
+            # Read old data
+            data = json.load(data_file)
+    except FileNotFoundError:
+        data = new_data
+    else:
+        if website in data:
+            response = messagebox.askyesno(title="Duplicate password",
+                                           message=f"You have a previously saved password for {website}.\n\nDo you want to update it with the new password?")
+            if response:
+                # Update old data with new data
+                data[website]["url"] = url
+                data[website]["email"] = email
+                data[website]["password"] = encrypted_pw
+                messagebox.showinfo("Password Updated Successfully",
+                                    f"Password for {website} has been updated successfully.\n\nURL: {url}\nEmail: {email}")
             else:
-                # Save new data
-                data.update(new_data)
-                with open('data/data.json', mode='w') as data_file:
-                    json.dump(data, data_file, indent=4)
-                    Clearing_password_sec()
-                    messagebox.showinfo("Password Saved Successfully", f"New password for {website} has been saved.")
-                    set_focus()
+                return
+        else:
+            # Save new data
+            data.update(new_data)
+            messagebox.showinfo("Password Saved Successfully",
+                                f"New password for {website} has been saved successfully.\n\nURL: {url}\nEmail: {email}")
+
+    with open('data/data.json', mode='w') as data_file:
+        json.dump(data, data_file, indent=4)
+
+    Clearing_password_sec()
+    set_focus()
 
 
 # ------showing password strength----------------
@@ -203,21 +206,31 @@ def Clearing_password_sec():
 
 # ------Open View password window----------------
 def view_passwords():
-    # Get the coordinates of the main window
-    main_window_x = app.winfo_x()
-    main_window_y = app.winfo_y()
+    try:
+        with open('data/data.json', mode='r') as data_file:
+            # Read old data
+            data = json.load(data_file)
+    except FileNotFoundError:
+        text = "You don't have any saved passwords yet. Let's add your first password!\nTo get started, go to 'Add " \
+               "Password' section and add your first password"
+        messagebox.showinfo("No Saved Passwords", text)
 
-    # Calculate the coordinates for the "View Password" window
-    view_window_x = main_window_x
-    view_window_y = main_window_y
+    else:
+        # Get the coordinates of the main window
+        main_window_x = app.winfo_x()
+        main_window_y = app.winfo_y()
 
-    view_window = ViewPasswordWindow(app)
-    view_window.geometry(f"+{view_window_x}+{view_window_y}")  # Set the coordinates for the window
-    view_window.transient(app)
-    view_window.grab_set()
-    app.withdraw()  # Hide the main window
-    app.wait_window(view_window)
-    app.deiconify()  # Show the main window again after the password window is closed
+        # Calculate the coordinates for the "View Password" window
+        view_window_x = main_window_x
+        view_window_y = main_window_y
+
+        view_window = ViewPasswordWindow(app)
+        view_window.geometry(f"+{view_window_x}+{view_window_y}")  # Set the coordinates for the window
+        view_window.transient(app)
+        view_window.grab_set()
+        app.withdraw()  # Hide the main window
+        app.wait_window(view_window)
+        app.deiconify()  # Show the main window again after the password window is closed
 
 
 # -------Open info window--------------------
@@ -229,199 +242,220 @@ def open_information_window():
     app.deiconify()  # Show the main window again after the password window is closed
 
 
-# -------Left Pane--------------------
+# ---- Catching error when login or signup windows manually close------
 
-# Frame
-left_pane = tk.Frame(app)
-left_pane.place(x=0, y=0, width=300, height=600)
-left_pane.configure(bg=LEFT_BG_COLOR)
+try:
+    # -------Left Pane--------------------
 
-canvas = tk.Canvas(left_pane, width=100, height=100, highlightthickness=0, background=LEFT_BG_COLOR)
-password_logo = tk.PhotoImage(file="icons8-password-100.png")
-canvas.create_image(50, 50, image=password_logo)
-canvas.place(x=75, y=25)
+    # Frame
+    left_pane = tk.Frame(app)
+    left_pane.place(x=0, y=0, width=300, height=600)
+    left_pane.configure(bg=LEFT_BG_COLOR)
 
-# label
-welcome_label = customtkinter.CTkLabel(left_pane, text="Welcome Back!", fg_color="transparent",
-                                       font=(MAIN_FONT, MAIN_FONT_SIZE))
-welcome_label.place(x=50, y=130)
-welcome_label2 = customtkinter.CTkLabel(left_pane, text=user_name, font=(MAIN_FONT, MAIN_FONT_SIZE))
-welcome_label2.place(x=50, y=165)
+except tk.TclError:
+    print("Login or signup window closed.")
+    # Handles the case when the window has been destroyed
 
-# buttons
-view_passwords_button = customtkinter.CTkButton(left_pane, text="View Passwords", fg_color=BTN_FG_COLOR,
-                                                text_color=BTN_TXT_COLOR, command=view_passwords)
-view_passwords_button.place(x=50, y=225)
-# change_login_button = customtkinter.CTkButton(left_pane, text="Change Login", fg_color=BTN_FG_COLOR,
-#                                               text_color=BTN_TXT_COLOR)
-# change_login_button.place(x=50, y=260)
-change_email_button = customtkinter.CTkButton(left_pane, text="Change Default Email", fg_color=BTN_FG_COLOR,
-                                              text_color=BTN_TXT_COLOR, command=change_default_email)
-change_email_button.place(x=50, y=260)
-info_button = customtkinter.CTkButton(left_pane, text="Info", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
-                                      command=open_information_window)
-info_button.place(x=50, y=295)
+else:
+    canvas = tk.Canvas(left_pane, width=100, height=100, highlightthickness=0, background=LEFT_BG_COLOR)
+    password_logo = tk.PhotoImage(file="icons8-password-100.png")
+    canvas.create_image(50, 50, image=password_logo)
+    canvas.place(x=75, y=25)
 
-# -------Right Pane--------------------
+    # label
+    welcome_label = customtkinter.CTkLabel(left_pane, text="Welcome Back!", fg_color="transparent",
+                                           font=(MAIN_FONT, MAIN_FONT_SIZE))
+    welcome_label.place(x=50, y=130)
+    welcome_label2 = customtkinter.CTkLabel(left_pane, text=user_name, font=(MAIN_FONT, MAIN_FONT_SIZE))
+    welcome_label2.place(x=50, y=165)
 
-# Frame
-right_pane = tk.Frame(app)
-right_pane.place(x=250, y=0, width=550, height=600)
-right_pane.configure(bg=RIGHT_BG_COLOR)
+    # buttons
+    view_passwords_button = customtkinter.CTkButton(left_pane, text="View Passwords", fg_color=BTN_FG_COLOR,
+                                                    text_color=BTN_TXT_COLOR, command=view_passwords)
+    view_passwords_button.place(x=50, y=225)
+    # change_login_button = customtkinter.CTkButton(left_pane, text="Change Login", fg_color=BTN_FG_COLOR,
+    #                                               text_color=BTN_TXT_COLOR)
+    # change_login_button.place(x=50, y=260)
+    change_email_button = customtkinter.CTkButton(left_pane, text="Change Default Email", fg_color=BTN_FG_COLOR,
+                                                  text_color=BTN_TXT_COLOR, command=change_default_email)
+    change_email_button.place(x=50, y=260)
+    info_button = customtkinter.CTkButton(left_pane, text="Info", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
+                                          command=open_information_window)
+    info_button.place(x=50, y=295)
 
-# Title - changing based on activity
-add_password_label = customtkinter.CTkLabel(right_pane, text="+ Add a Password", fg_color="transparent",
-                                            font=(MAIN_FONT, MAIN_FONT_SIZE))
-add_password_label.place(x=180, y=50)
+    # -------Right Pane--------------------
 
+    # Frame
+    right_pane = tk.Frame(app)
+    right_pane.place(x=250, y=0, width=550, height=600)
+    right_pane.configure(bg=RIGHT_BG_COLOR)
 
-# ------Add password form----------------
-
-# ------Showing Generating password----------------
-def showing_generated_password():
-    global length_of_password
-    length_of_password = password_length_entry.get()
-    if length_of_password == "":
-        length_of_password = 12
-        password_length_entry.insert(tk.END, 12)
-    elif int(length_of_password) > 40:
-        length_of_password = 40
-        error_message = "Password length cannot be bigger than 40."
-        messagebox.showerror("Incorrect password length", error_message)
-    else:
-        length_of_password = int(password_length_entry.get())
-
-    if length_of_password >= num_of_letters + num_of_symbols + num_of_numbers:
-        generated_password = password_gen(num_of_letters, num_of_symbols, num_of_numbers, length_of_password)
-        password_entry.delete(0, tk.END)  # Clear the existing password
-        password_entry.insert(tk.END, generated_password)
-        showing_password_strength(generated_password)
-        pyperclip.copy(generated_password)  # using pyperclip to add password to clipboard
-    else:
-        error_message = "Please increase the password length or reduce the number of letters, symbols, or numbers."
-        messagebox.showerror("Insufficient password length", error_message)
+    # Title - changing based on activity
+    add_password_label = customtkinter.CTkLabel(right_pane, text="+ Add a Password", fg_color="transparent",
+                                                font=(MAIN_FONT, MAIN_FONT_SIZE))
+    add_password_label.place(x=180, y=50)
 
 
-# ------Settings for random password generator----------------
+    # ------Add password form----------------
 
-# Labels
+    # ------Showing Generating password----------------
+    def showing_generated_password():
+        global length_of_password
+        length_of_password = password_length_entry.get()
 
-Password_Generator_Settings_label = customtkinter.CTkLabel(right_pane, text="Customize Your Generated Password",
-                                                           font=(MAIN_FONT, 14, "underline"))
-Password_Generator_Settings_label.place(x=100, y=395)
-password_length_label = customtkinter.CTkLabel(right_pane, text="Select the length of your password (maximum 40):",
-                                               font=(MAIN_FONT, SECOND_FONT_SIZE))
-password_length_label.place(x=100, y=430)
-Number_of_letters_label = customtkinter.CTkLabel(right_pane,
-                                                 text="Select number of letters for your password (maximum 20):",
-                                                 font=(MAIN_FONT, SECOND_FONT_SIZE))
-Number_of_letters_label.place(x=100, y=455)
-Number_of_symbols_label = customtkinter.CTkLabel(right_pane,
-                                                 text="Select number of symbols for your Password (maximum 08):",
-                                                 font=(MAIN_FONT, SECOND_FONT_SIZE))
-Number_of_symbols_label.place(x=100, y=480)
-Number_of_numbers_label = customtkinter.CTkLabel(right_pane,
-                                                 text="Select number of numbers for your Password (maximum 08):",
-                                                 font=(MAIN_FONT, SECOND_FONT_SIZE))
-Number_of_numbers_label.place(x=100, y=505)
-
-# Entry
-
-password_length_entry = customtkinter.CTkEntry(right_pane, width=50, height=20, font=(MAIN_FONT, SECOND_FONT_SIZE),
-                                               fg_color="#3a7ebf")
-password_length_entry.place(x=450, y=430)
-password_length_entry.insert(tk.END, 12)
-
-
-#  Dropdowns
-
-def num_letters_callback(choice):
-    global num_of_letters
-    num_of_letters = int(choice)
+        if not length_of_password:
+            length_of_password = 12
+            password_length_entry.insert(tk.END, 12)
+        elif not length_of_password.isdigit():
+            error_message = "Password length must be a number."
+            messagebox.showerror("Incorrect password length", error_message)
+            password_length_entry.delete(0, tk.END)
+        elif int(length_of_password) > 40:
+            length_of_password = 40
+            error_message = "Password length cannot be greater than 40."
+            messagebox.showerror("Incorrect password length", error_message)
+        else:
+            length_of_password = int(length_of_password)
+            if length_of_password >= num_of_letters + num_of_symbols + num_of_numbers:
+                generated_password = password_gen(num_of_letters, num_of_symbols, num_of_numbers, length_of_password)
+                password_entry.delete(0, tk.END)  # Clear the existing password
+                password_entry.insert(tk.END, generated_password)
+                showing_password_strength(generated_password)
+                pyperclip.copy(generated_password)  # using pyperclip to add password to clipboard
+            else:
+                error_message = "Please increase the password length or reduce the number of letters, symbols, or numbers."
+                messagebox.showerror("Insufficient password length", error_message)
 
 
-num_letters = customtkinter.CTkOptionMenu(app,
-                                          values=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
-                                                  "14", "15", "16", "17", "18", "19", "20"], width=50, height=20,
-                                          command=num_letters_callback)
-num_letters.set("8")
-num_letters.place(x=700, y=460)
+    # ------Settings for random password generator----------------
+
+    # Labels
+
+    Password_Generator_Settings_label = customtkinter.CTkLabel(right_pane, text="Customize Your Generated Password",
+                                                               font=(MAIN_FONT, 14, "underline"))
+    Password_Generator_Settings_label.place(x=100, y=395)
+    password_length_label = customtkinter.CTkLabel(right_pane, text="Select the length of your password (maximum 40):",
+                                                   font=(MAIN_FONT, SECOND_FONT_SIZE))
+    password_length_label.place(x=100, y=430)
+    Number_of_letters_label = customtkinter.CTkLabel(right_pane,
+                                                     text="Select number of letters for your password (maximum 20):",
+                                                     font=(MAIN_FONT, SECOND_FONT_SIZE))
+    Number_of_letters_label.place(x=100, y=455)
+    Number_of_symbols_label = customtkinter.CTkLabel(right_pane,
+                                                     text="Select number of symbols for your Password (maximum 08):",
+                                                     font=(MAIN_FONT, SECOND_FONT_SIZE))
+    Number_of_symbols_label.place(x=100, y=480)
+    Number_of_numbers_label = customtkinter.CTkLabel(right_pane,
+                                                     text="Select number of numbers for your Password (maximum 08):",
+                                                     font=(MAIN_FONT, SECOND_FONT_SIZE))
+    Number_of_numbers_label.place(x=100, y=505)
+
+    # Entry
+
+    password_length_entry = customtkinter.CTkEntry(right_pane, width=50, height=20, font=(MAIN_FONT, SECOND_FONT_SIZE),
+                                                   fg_color="#3a7ebf")
+    password_length_entry.place(x=450, y=430)
+    password_length_entry.insert(tk.END, 12)
 
 
-def num_symbols_callback(choice):
-    global num_of_symbols
-    num_of_symbols = int(choice)
+    #  Dropdowns
+
+    def num_letters_callback(choice):
+        global num_of_letters
+        num_of_letters = int(choice)
 
 
-num_symbols = customtkinter.CTkOptionMenu(app, values=["1", "2", "3", "4", "5", "6", "7", "8"], width=50, height=20,
-                                          command=num_symbols_callback)
-num_symbols.set("2")
-num_symbols.place(x=700, y=485)
+    num_letters = customtkinter.CTkOptionMenu(app,
+                                              values=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
+                                                      "14", "15", "16", "17", "18", "19", "20"], width=50, height=20,
+                                              command=num_letters_callback)
+    num_letters.set("8")
+    num_letters.place(x=700, y=460)
 
 
-def num_numbers_callback(choice):
-    global num_of_numbers
-    num_of_numbers = int(choice)
+    def num_symbols_callback(choice):
+        global num_of_symbols
+        num_of_symbols = int(choice)
 
 
-num_number = customtkinter.CTkOptionMenu(app, values=["1", "2", "3", "4", "5", "6", "7", "8"], width=50, height=20,
-                                         command=num_numbers_callback)
-num_number.set("2")
-num_number.place(x=700, y=510)
-
-# ---------Add Password section----------
-
-#  Labels
-website_name_label = customtkinter.CTkLabel(right_pane, text="Website Name:", font=(MAIN_FONT, SECOND_FONT_SIZE))
-website_name_label.place(x=50, y=125)
-url_label = customtkinter.CTkLabel(right_pane, text="Website Address(URL):", font=(MAIN_FONT, SECOND_FONT_SIZE))
-url_label.place(x=50, y=160)
-email_label = customtkinter.CTkLabel(right_pane, text="Email/Username:", font=(MAIN_FONT, SECOND_FONT_SIZE))
-email_label.place(x=50, y=195)
-password_label = customtkinter.CTkLabel(right_pane, text="Password:", font=(MAIN_FONT, SECOND_FONT_SIZE))
-password_label.place(x=50, y=230)
-
-# Password strength showing
-password_strength_label = customtkinter.CTkLabel(right_pane, text="",
-                                                 font=(MAIN_FONT, SECOND_FONT_SIZE, "bold"))
-password_strength_label.place(x=200, y=260)
-
-#  Entries
-website_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
-website_entry.place(x=200, y=125)
-url_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
-url_entry.place(x=200, y=160)
-email_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
-email_entry.insert(tk.END, default_email)
-email_entry.place(x=200, y=195)
-password_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
-password_entry.place(x=200, y=230)
-
-#  Button
-generate_passwords_button = customtkinter.CTkButton(right_pane, text="Generate Secure Password", fg_color=BTN_FG_COLOR,
-                                                    text_color=BTN_TXT_COLOR, width=300,
-                                                    command=showing_generated_password)
-generate_passwords_button.place(x=200, y=300)
-save_button = customtkinter.CTkButton(right_pane, text="Save", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
-                                      width=75, command=save)
-save_button.place(x=275, y=350)
-cancel_button = customtkinter.CTkButton(right_pane, text="Cancel", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
-                                        width=75, command=Clearing_password_sec)
-cancel_button.place(x=360, y=350)
-
-# Bind the checking_password_strength function to the KeyRelease event of the entry widget
-password_entry.bind("<KeyRelease>", showing_password_strength)
+    num_symbols = customtkinter.CTkOptionMenu(app, values=["1", "2", "3", "4", "5", "6", "7", "8"], width=50, height=20,
+                                              command=num_symbols_callback)
+    num_symbols.set("2")
+    num_symbols.place(x=700, y=485)
 
 
-# ------Setting Focus on website name entry on password form----------------
-def set_focus():
-    website_entry.focus_set()
+    def num_numbers_callback(choice):
+        global num_of_numbers
+        num_of_numbers = int(choice)
 
 
-# ------Binding Enter key to save password function on password form----------------
-app.bind("<Return>", save)
+    num_number = customtkinter.CTkOptionMenu(app, values=["1", "2", "3", "4", "5", "6", "7", "8"], width=50, height=20,
+                                             command=num_numbers_callback)
+    num_number.set("2")
+    num_number.place(x=700, y=510)
 
-# Call the set_focus function after a short delay
-app.after(100, set_focus)
+    # ---------Add Password section----------
 
-app.mainloop()
+    #  Labels
+    website_name_label = customtkinter.CTkLabel(right_pane, text="Website Name:", font=(MAIN_FONT, SECOND_FONT_SIZE))
+    website_name_label.place(x=50, y=125)
+    url_label = customtkinter.CTkLabel(right_pane, text="Website Address(URL):", font=(MAIN_FONT, SECOND_FONT_SIZE))
+    url_label.place(x=50, y=160)
+    email_label = customtkinter.CTkLabel(right_pane, text="Email/Username:", font=(MAIN_FONT, SECOND_FONT_SIZE))
+    email_label.place(x=50, y=195)
+    password_label = customtkinter.CTkLabel(right_pane, text="Password:", font=(MAIN_FONT, SECOND_FONT_SIZE))
+    password_label.place(x=50, y=230)
+
+    # Password strength showing
+    password_strength_label = customtkinter.CTkLabel(right_pane, text="",
+                                                     font=(MAIN_FONT, SECOND_FONT_SIZE, "bold"))
+    password_strength_label.place(x=200, y=260)
+
+    #  Entries
+    website_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
+    website_entry.place(x=200, y=125)
+    url_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
+    url_entry.place(x=200, y=160)
+    email_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
+    email_entry.insert(tk.END, default_email)
+    email_entry.place(x=200, y=195)
+    password_entry = customtkinter.CTkEntry(right_pane, width=300, font=(MAIN_FONT, SECOND_FONT_SIZE))
+    password_entry.place(x=200, y=230)
+
+    #  Button
+    generate_passwords_button = customtkinter.CTkButton(right_pane, text="Generate Secure Password", fg_color=BTN_FG_COLOR,
+                                                        text_color=BTN_TXT_COLOR, width=300,
+                                                        command=showing_generated_password)
+    generate_passwords_button.place(x=200, y=300)
+    save_button = customtkinter.CTkButton(right_pane, text="Save", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
+                                          width=75, command=save)
+    save_button.place(x=275, y=350)
+    cancel_button = customtkinter.CTkButton(right_pane, text="Cancel", fg_color=BTN_FG_COLOR, text_color=BTN_TXT_COLOR,
+                                            width=75, command=Clearing_password_sec)
+    cancel_button.place(x=360, y=350)
+
+    # Bind the checking_password_strength function to the KeyRelease event of the entry widget
+    password_entry.bind("<KeyRelease>", showing_password_strength)
+
+    # ------Setting up copyright notice----------------
+    current_year = datetime.date.today().year
+
+    # Copyright notice
+    copyright_notice = f"Copyright (c) {current_year} @cyberbuddhika"
+    copyright_notice_label = customtkinter.CTkLabel(right_pane,
+                                                     text=copyright_notice,
+                                                     font=(MAIN_FONT, 9))
+    copyright_notice_label.place(x=360, y=565)
+
+    # ------Setting Focus on website name entry on password form----------------
+    def set_focus():
+        website_entry.focus_set()
+
+
+    # ------Binding Enter key to save password function on password form----------------
+    app.bind("<Return>", save)
+
+    # Call the set_focus function after a short delay
+    app.after(100, set_focus)
+
+    app.mainloop()

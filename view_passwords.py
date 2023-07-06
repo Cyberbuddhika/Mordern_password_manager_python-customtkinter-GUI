@@ -4,6 +4,7 @@ import customtkinter
 import json
 import pyperclip
 from cryptography.fernet import Fernet
+import datetime
 
 MAIN_FONT = "Ubuntu"
 LEFT_BG_COLOR = "#08303b"
@@ -265,5 +266,14 @@ class ViewPasswordWindow(customtkinter.CTkToplevel):
                                             wraplength=360, justify="left")
         help_label.place(x=125, y=380)
 
+        # ------Setting up copyright notice----------------
+        current_year = datetime.date.today().year
+
+        # Copyright notice
+        copyright_notice = f"Copyright (c) {current_year} @cyberbuddhika"
+        copyright_notice_label = customtkinter.CTkLabel(left_pane,
+                                                        text=copyright_notice,
+                                                        font=(MAIN_FONT, 9))
+        copyright_notice_label.place(x=60, y=565)
     def back_button_clicked(self):
         self.destroy()  # Close the view password window and return to the main window

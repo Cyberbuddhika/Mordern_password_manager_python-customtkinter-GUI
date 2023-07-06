@@ -11,6 +11,7 @@ from login import ViewLoginWindow
 from info import ViewInfoWindow
 import os.path
 from cryptography.fernet import Fernet
+import datetime
 
 # ------Setting up defaults ----------------
 
@@ -435,6 +436,16 @@ else:
 
     # Bind the checking_password_strength function to the KeyRelease event of the entry widget
     password_entry.bind("<KeyRelease>", showing_password_strength)
+
+    # ------Setting up copyright notice----------------
+    current_year = datetime.date.today().year
+
+    # Copyright notice
+    copyright_notice = f"Copyright (c) {current_year} @cyberbuddhika"
+    copyright_notice_label = customtkinter.CTkLabel(right_pane,
+                                                     text=copyright_notice,
+                                                     font=(MAIN_FONT, 9))
+    copyright_notice_label.place(x=360, y=565)
 
     # ------Setting Focus on website name entry on password form----------------
     def set_focus():
