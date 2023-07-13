@@ -16,7 +16,7 @@ SECOND_FONT_SIZE = 12
 class ViewSignupWindow(customtkinter.CTkToplevel):
     def __init__(self, master):
         super().__init__(master)
-        self.title("View Passwords")
+        self.title("Sign-up")
         self.geometry("400x500")
         self.configure(fg_color="#042430")
 
@@ -52,6 +52,8 @@ class ViewSignupWindow(customtkinter.CTkToplevel):
 
             if len(login_name) == 0 or len(master_password) == 0 or len(email) == 0:
                 messagebox.showerror("Empty Fields", "Please fill all the input fields.")
+            elif " " in login_name:
+                messagebox.showerror("User Name Error", "Please remove any space from the User Name.")
             else:
                 login_data = {
                     "login_name": login_name,
